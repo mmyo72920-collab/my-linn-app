@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Linn</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --dark: #0f172a;
+            --dark-soft: #1e293b;
+            --blue: #2563eb;
+            --gray: #64748b;
+            --bg: linear-gradient(135deg, #020617, #0f172a);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter','Pyidaungsu',sans-serif;
+            background: var(--bg);
+            padding: 20px;
+        }
+
+        /* Card Animation */
+        .login-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 360px;
+            padding: 40px 25px;
+            border-radius: 22px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+            animation: fadeUp 0.6s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(25px); }
+            to { opacity:1; transform: translateY(0); }
+        }
+
+        .admin-icon {
+            width: 72px;
+            height: 72px;
+            margin: auto;
+            background: #f1f5f9;
+            color: var(--dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 18px 0 6px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 28px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.25s;
+        }
+
+        input:focus {
+            border-color: var(--dark);
+            box-shadow: 0 0 0 4px rgba(15,23,42,0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: var(--dark);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        button:hover {
+            background: var(--dark-soft);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .back-link {
+            margin-top: 22px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .back-link a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="admin-icon">
+        <i class="fas fa-user-shield"></i>
+    </div>
+
+    <h2>Admin Login</h2>
+    <p class="subtitle">စနစ်အား စီမံခန့်ခွဲရန် ဝင်ရောက်ပါ</p>
+
+    <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input id="adminUser" type="text" placeholder="အသုံးပြုသူအမည်" required>
+    </div>
+
+    <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input id="adminPass" type="password" placeholder="စကားဝှက်" required>
+    </div>
+
+    <button id="loginBtn" onclick="adminLogin()">Admin အဖြစ်ဝင်မည်</button>
+
+    <div class="back-link">
+        သာမန် User ဖြစ်ပါက  
+        <a href="login.html">ဒီနေရာမှ ဝင်ပါ</a>
+    </div>
+</div>
+
+<script>
+    async function adminLogin() {
+        const usernameInput = document.getElementById('adminUser');
+        const passwordInput = document.getElementById('adminPass');
+        const loginBtn = document.getElementById('loginBtn');
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if(!username || !password){
+            alert("Username နှင့် Password ဖြည့်ပါ");
+            return;
+        }
+
+        // UI Feedback
+        loginBtn.innerText = "စစ်ဆေးနေသည်...";
+        loginBtn.disabled = true;
+
+        try {
+            const response = await fetch("http://localhost:5000/admin-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // ✅ Save login status to browser memory
+                localStorage.setItem('isAdminLoggedIn', 'true');
+                
+                // ✅ Redirect to Dashboard
+                window.location.href = "admin-dashboard.html";
+            } else {
+                alert(data.message || "Login မအောင်မြင်ပါ");
+                loginBtn.innerText = "Admin အဖြစ်ဝင်မည်";
+                loginBtn.disabled = false;
+            }
+
+        } catch (error) {
+            console.error("Connection Error:", error);
+            alert("Server မရရှိပါ (Backend ကို run ထားရန် လိုအပ်သည်)");
+            loginBtn.innerText = "Admin အဖြစ်ဝင်မည်";
+            loginBtn.disabled = false;
+        }
+    }
+
+    // Allow "Enter" key to submit
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            adminLogin();
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linn - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #2563eb;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', 'Pyidaungsu', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        h1 { font-size: 1.5rem; color: var(--primary); margin: 0; }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .table-container {
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 15px;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--primary);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-view {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 5px 10px;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+
+        .btn-view:hover { background: var(--accent); color: white; }
+
+        .btn-delete {
+            background: none;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        @media (max-width: 600px) {
+            th:nth-child(3), td:nth-child(3) { display: none; } /* Hide Education on mobile */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-users-cog"></i> Admin Dashboard</h1>
+        <button class="btn-logout" onclick="logout()">ထွက်မည်</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>အမည်</th>
+                    <th>အသက်</th>
+                    <th>ပညာအရည်အချင်း</th>
+                    <th>လုပ်ဆောင်ချက်</th>
+                </tr>
+            </thead>
+            <tbody id="formList">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 1. Security Check
+    if (localStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+
+    // 2. Fetch Submissions
+    async function fetchForms() {
+        try {
+            const res = await fetch('http://localhost:5000/admin/forms');
+            const data = await res.json();
+            
+            const list = document.getElementById('formList');
+            list.innerHTML = '';
+
+            data.forEach(form => {
+                list.innerHTML += `
+                    <tr>
+                        <td>${form.fullName}</td>
+                        <td>${form.age}</td>
+                        <td>${form.education}</td>
+                        <td class="actions">
+                            <a href="user-details.html?id=${form._id}" class="btn-view">
+                                <i class="fas fa-eye"></i> ကြည့်မည်
+                            </a>
+                            <button class="btn-delete" onclick="deleteForm('${form._id}')">
+                                <i class="fas fa-trash"></i> ဖျက်မည်
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // 3. Delete Function
+    async function deleteForm(id) {
+        if (!confirm('ဤအချက်အလက်ကို ဖျက်ရန် သေချာပါသလား?')) return;
+
+        try {
+            const res = await fetch(`http://localhost:5000/admin/form/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert('ဖျက်ပြီးပါပြီ');
+                fetchForms(); // Refresh the list
+            } else {
+                alert('ဖျက်၍မရပါ');
+            }
+        } catch (error) {
+            alert('Server နှင့် ချိတ်ဆက်၍မရပါ');
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('isAdminLoggedIn');
+        window.location.href = 'admin-login.html';
+    }
+
+    // Initial load
+    fetchForms();
+</script>
+
+</body>
+</html>
