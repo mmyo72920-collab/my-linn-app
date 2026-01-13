@@ -26,6 +26,7 @@ if (!fs.existsSync(uploadDir)) {
 ======================= */
 app.use(express.json());
 app.use(cors()); 
+// Uploads folder ကို public အဖြစ် သတ်မှတ်ပေးခြင်း (ပုံများကြည့်နိုင်ရန်)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -60,27 +61,17 @@ const upload = multer({
 app.post('/register', async (req, res) => {
   try {
     const { name, phone, password } = req.body;
-
-    if (!name || !phone || !password) {
-        return res.status(400).json({ message: 'အချက်အလက်အားလုံး ဖြည့်စွက်ပါ' });
-    }
-
-    if (password.length < 8) {
-        return res.status(400).json({ message: 'စကားဝှက်သည် အနည်းဆုံး စာလုံး ၈ လုံး ရှိရပါမည်' });
-    }
+    if (!name || !phone || !password) return res.status(400).json({ message: 'အချက်အလက်အားလုံး ဖြည့်စွက်ပါ' });
+    if (password.length < 8) return res.status(400).json({ message: 'စကားဝှက်သည် အနည်းဆုံး စာလုံး ၈ လုံး ရှိရပါမည်' });
 
     const existingUser = await User.findOne({ phone });
-    if (existingUser) {
-        return res.status(400).json({ message: 'ဤဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားပါ' });
-    }
+    if (existingUser) return res.status(400).json({ message: 'ဤဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားပါ' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ name, phone, password: hashedPassword });
-
     await user.save();
     res.status(201).json({ message: 'Register successful' });
   } catch (err) {
-    console.error('Register error:', err);
     res.status(500).json({ message: 'Register error' });
   }
 });
@@ -89,52 +80,67 @@ app.post('/login', async (req, res) => {
   try {
     const { phone, password } = req.body;
     const user = await User.findOne({ phone });
-    
-    if (!user) {
-        return res.status(401).json({ message: 'ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်' });
-    }
+    if (!user) return res.status(401).json({ message: 'ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(401).json({ message: 'စကားဝှက် မှားယွင်းနေပါသည်' });
-    }
+    if (!isMatch) return res.status(401).json({ message: 'စကားဝှက် မှားယွင်းနေပါသည်' });
 
-    res.json({
-      message: 'Login successful',
-      user: { id: user._id } 
-    });
+    res.json({ message: 'Login successful', user: { id: user._id } });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 /* =======================
-   User Details API (NEW)
+   User & Form Management API
 ======================= */
-// User တစ်ဦးချင်းစီ၏ အချက်အလက်ကို ID ဖြင့် ရှာဖွေပေးရန်
+
+// ၁။ User Details ရယူရန်
 app.get('/api/user/:id', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password'); // Password ကို ချန်လှပ်ထားမည်
-        if (!user) {
-            return res.status(404).json({ message: 'အသုံးပြုသူ ရှာမတွေ့ပါ' });
-        }
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) return res.status(404).json({ message: 'အသုံးပြုသူ ရှာမတွေ့ပါ' });
         res.json(user);
     } catch (err) {
-        console.error('Fetch user error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
+// ၂။ အသုံးပြုသူ Form ဖြည့်ပြီးသားရှိမရှိ စစ်ဆေးရန် (Image URL များပါ ပေါင်းထည့်ပေးထားသည်)
+app.get('/api/check-form/:userId', async (req, res) => {
+    try {
+        const form = await Form.findOne({ userId: req.params.userId });
+        if (form) {
+            // Frontend တွင် ပုံများတိုက်ရိုက်ပြရန် URL လမ်းကြောင်းများ ပြင်ဆင်ခြင်း
+            const host = req.get('host');
+            const protocol = req.protocol;
+            const baseUrl = `${protocol}://${host}/uploads/`;
+
+            const fullData = {
+                ...form._doc,
+                nrcUrl: baseUrl + form.nrcFile,
+                householdUrl: baseUrl + form.householdFile
+            };
+
+            res.json({ exists: true, data: fullData });
+        } else {
+            res.json({ exists: false });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Error checking form' });
+    }
+});
+
 /* =======================
-   Form Submission
+   Form Submission & Update
 ======================= */
+
 app.post('/submit-form', upload.fields([
     { name: 'nrcFile', maxCount: 1 },
     { name: 'householdFile', maxCount: 1 }
   ]), async (req, res) => {
     try {
       const { userId, fullName, age, education, address, fatherName, motherName } = req.body;
-      
       if (!req.files || !req.files.nrcFile || !req.files.householdFile) {
           return res.status(400).json({ message: 'ဖိုင်များအားလုံး တင်ပေးရန် လိုအပ်ပါသည်' });
       }
@@ -148,8 +154,30 @@ app.post('/submit-form', upload.fields([
       await form.save();
       res.json({ message: 'Form submitted successfully' });
     } catch (err) {
-      console.error('Submission error:', err);
       res.status(500).json({ message: 'Form submission failed' });
+    }
+});
+
+app.put('/api/update-form/:userId', upload.fields([
+    { name: 'nrcFile', maxCount: 1 },
+    { name: 'householdFile', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const { fullName, age, education, address, fatherName, motherName } = req.body;
+        let updateData = { fullName, age, education, address, fatherName, motherName };
+
+        if (req.files && req.files.nrcFile) updateData.nrcFile = req.files.nrcFile[0].filename;
+        if (req.files && req.files.householdFile) updateData.householdFile = req.files.householdFile[0].filename;
+
+        const updatedForm = await Form.findOneAndUpdate(
+            { userId: req.params.userId },
+            { $set: updateData },
+            { new: true }
+        );
+
+        res.json({ message: 'Update အောင်မြင်ပါသည်', data: updatedForm });
+    } catch (err) {
+        res.status(500).json({ message: 'Update လုပ်ဆောင်မှု မအောင်မြင်ပါ' });
     }
 });
 
@@ -174,26 +202,14 @@ app.get('/admin/forms', async (req, res) => {
   }
 });
 
-app.get('/admin/form/:id', async (req, res) => {
-  try {
-    const form = await Form.findById(req.params.id);
-    if (!form) return res.status(404).json({ message: 'Data not found' });
-    res.json(form);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching form' });
-  }
-});
-
 app.delete('/admin/form/:id', async (req, res) => {
   try {
     const form = await Form.findByIdAndDelete(req.params.id);
     if (form) {
         const nrcPath = `./uploads/${form.nrcFile}`;
         const hhPath = `./uploads/${form.householdFile}`;
-        
         if (fs.existsSync(nrcPath)) fs.unlinkSync(nrcPath);
         if (fs.existsSync(hhPath)) fs.unlinkSync(hhPath);
-        
         res.json({ message: 'Data deleted successfully' });
     } else {
         res.status(404).json({ message: 'Form not found' });
@@ -203,10 +219,5 @@ app.delete('/admin/form/:id', async (req, res) => {
   }
 });
 
-/* =======================
-   Server Start
-======================= */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
