@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Details</title>
+    <style>
+        .card { box-shadow: 0 4px 8px rgba(0,0,0,0.2); padding: 20px; width: 300px; margin: auto; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>အသုံးပြုသူ အချက်အလက်</h2>
+        <p><strong>အမည်:</strong> <span id="userName">...</span></p>
+        <p><strong>ဖုန်း:</strong> <span id="userPhone">...</span></p>
+    </div>
+
+    <script>
+        // URL မှ ID ကို ယူခြင်း
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
+
+        // Render API မှ Data ခေါ်ယူခြင်း
+        fetch(`https://my-linn-app.onrender.com/api/user/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('userName').innerText = data.name;
+                document.getElementById('userPhone').innerText = data.phone;
+            });
+    </script>
+</body>
+</html>
