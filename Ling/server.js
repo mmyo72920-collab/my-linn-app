@@ -7,7 +7,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Models (Ensure these files exist in your ./models folder)
+// Models
 const User = require('./models/User');
 const Form = require('./models/Form');
 
@@ -16,7 +16,6 @@ const app = express();
 /* =======================
    Preparation
 ======================= */
-// Automatically create uploads folder if it doesn't exist
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
@@ -26,7 +25,7 @@ if (!fs.existsSync(uploadDir)) {
    Middleware
 ======================= */
 app.use(express.json());
-app.use(cors()); // Fixes Cross-Origin issues
+app.use(cors()); 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -46,14 +45,13 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    // Unique filename using timestamp
     cb(null, Date.now() + '-' + path.extname(file.originalname));
   }
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 } 
 });
 
 /* =======================
@@ -63,17 +61,14 @@ app.post('/register', async (req, res) => {
   try {
     const { name, phone, password } = req.body;
 
-    // 1. Check for empty fields
     if (!name || !phone || !password) {
         return res.status(400).json({ message: 'အချက်အလက်အားလုံး ဖြည့်စွက်ပါ' });
     }
 
-    // 2. NEW: Minimum 8 characters validation
     if (password.length < 8) {
         return res.status(400).json({ message: 'စကားဝှက်သည် အနည်းဆုံး စာလုံး ၈ လုံး ရှိရပါမည်' });
     }
 
-    // 3. Check if user already exists
     const existingUser = await User.findOne({ phone });
     if (existingUser) {
         return res.status(400).json({ message: 'ဤဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားပါ' });
@@ -104,7 +99,6 @@ app.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'စကားဝှက် မှားယွင်းနေပါသည်' });
     }
 
-    // Returns user object to match frontend: localStorage.setItem('userId', data.user.id)
     res.json({
       message: 'Login successful',
       user: { id: user._id } 
@@ -112,6 +106,23 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
+});
+
+/* =======================
+   User Details API (NEW)
+======================= */
+// User တစ်ဦးချင်းစီ၏ အချက်အလက်ကို ID ဖြင့် ရှာဖွေပေးရန်
+app.get('/api/user/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password'); // Password ကို ချန်လှပ်ထားမည်
+        if (!user) {
+            return res.status(404).json({ message: 'အသုံးပြုသူ ရှာမတွေ့ပါ' });
+        }
+        res.json(user);
+    } catch (err) {
+        console.error('Fetch user error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 /* =======================
@@ -177,7 +188,6 @@ app.delete('/admin/form/:id', async (req, res) => {
   try {
     const form = await Form.findByIdAndDelete(req.params.id);
     if (form) {
-        // Delete physical files to clean up storage
         const nrcPath = `./uploads/${form.nrcFile}`;
         const hhPath = `./uploads/${form.householdFile}`;
         
