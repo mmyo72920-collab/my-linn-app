@@ -1,60 +1,168 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linn - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Login | အကောင့်ဝင်ရန်</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
-        body { font-family: 'Inter', 'Pyidaungsu', sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 400px; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
-        .brand { font-size: 2.5rem; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
-        .input-group { position: relative; margin-bottom: 20px; text-align: left; }
-        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        input { width: 100%; padding: 12px 15px 12px 45px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; outline: none; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
-        .link { margin-top: 25px; font-size: 0.9rem; color: #64748b; }
-        .admin-link { margin-top: 15px; font-size: 0.8rem; color: #94a3b8; }
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #2d3748;
+        }
+
+        body {
+            font-family: 'Inter', 'Pyidaungsu', sans-serif;
+            background: var(--primary-gradient);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.8rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .footer-text {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .footer-text a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #message {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.2rem;
+        }
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="brand">Linn</div>
-    <h2>Login ဝင်ရန်</h2>
-    <div class="input-group">
-        <i class="fas fa-phone"></i>
-        <input type="text" id="phone" placeholder="ဖုန်းနံပါတ်">
-    </div>
-    <div class="input-group">
-        <i class="fas fa-lock"></i>
-        <input type="password" id="password" placeholder="Password">
-    </div>
-    <button onclick="loginUser()">Login ဝင်မည်</button>
-    <div class="link">အကောင့်မရှိသေးဘူးလား? <a href="index.html" style="color:var(--primary); font-weight:600; text-decoration:none;">ဖွင့်ရန်</a></div>
-    <div class="admin-link">Admin ဖြစ်ပါက <a href="admin-login.html" style="color:#64748b;">ဤနေရာမှဝင်ပါ</a></div>
-</div>
 
-<script>
-    async function loginUser() {
-        const phone = document.getElementById('phone').value;
-        const password = document.getElementById('password').value;
+    <div class="login-card">
+        <h2>အကောင့်ဝင်ရန်</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label>ဖုန်းနံပါတ်</label>
+                <input type="text" id="phone" placeholder="09xxxxxxxxx" required>
+            </div>
+            <div class="input-group">
+                <label>စကားဝှက် (Password)</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" id="loginBtn">Login ဝင်မည်</button>
+        </form>
+        
+        <div id="message"></div>
 
-        try {
-            const res = await fetch('https://my-linn-app.onrender.com/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, password })
-            });
-            const data = await res.json();
-            if(res.ok) {
-                localStorage.setItem('userId', data.user.id);
-                window.location.href = 'form.html';
-            } else { alert(data.message); }
-        } catch { alert("Server ချိတ်ဆက်မှု မရရှိပါ"); }
-    }
-</script>
+        <div class="footer-text">
+            အကောင့်မရှိသေးပါက? <a href="/">အကောင့်သစ်ဖွင့်ရန်</a>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const messageDiv = document.getElementById('message');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            
+            messageDiv.style.color = "blue";
+            messageDiv.innerText = "စစ်ဆေးနေပါသည်...";
+
+            try {
+                const response = await fetch('https://my-linn-app.onrender.com/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageDiv.style.color = "green";
+                    messageDiv.innerText = "Login အောင်မြင်ပါသည်။ ခေတ္တစောင့်ပါ...";
+                    
+                    // User ID ကို အသုံးပြုပြီး Details Page သို့ လွှတ်ပေးခြင်း
+                    setTimeout(() => {
+                        window.location.href = `cancheckuser-details.html?id=${data.user.id}`;
+                    }, 1000);
+                } else {
+                    messageDiv.style.color = "red";
+                    messageDiv.innerText = data.message;
+                }
+            } catch (err) {
+                messageDiv.style.color = "red";
+                messageDiv.innerText = "ချိတ်ဆက်မှု အမှားအယွင်းရှိနေပါသည်။";
+            }
+        });
+    </script>
 </body>
-
 </html>

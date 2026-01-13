@@ -1,30 +1,153 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>User Details</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | Profile အချက်အလက်</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        .card { box-shadow: 0 4px 8px rgba(0,0,0,0.2); padding: 20px; width: 300px; margin: auto; text-align: center; }
+        :root {
+            --primary-color: #4f46e5;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', 'Pyidaungsu', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .profile-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1.5rem;
+        }
+
+        h2 {
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-group {
+            text-align: left;
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            font-weight: 600;
+            margin-top: 0.2rem;
+        }
+
+        .btn-home {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.6rem;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-home:hover {
+            background-color: #4338ca;
+        }
+
+        /* Loading Animation */
+        .loading {
+            color: var(--text-sub);
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
+
+    <div class="profile-container" id="profileCard">
+        <div class="avatar" id="userInitial">U</div>
         <h2>အသုံးပြုသူ အချက်အလက်</h2>
-        <p><strong>အမည်:</strong> <span id="userName">...</span></p>
-        <p><strong>ဖုန်း:</strong> <span id="userPhone">...</span></p>
+        <p style="color: var(--text-sub); margin-bottom: 2rem;">သင့်အကောင့်အချက်အလက်များကို ဤနေရာတွင် စစ်ဆေးနိုင်ပါသည်</p>
+
+        <div class="info-group">
+            <div class="info-label">အမည် (Name)</div>
+            <div class="info-value" id="userName"><span class="loading">ရှာဖွေနေသည်...</span></div>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">ဖုန်းနံပါတ် (Phone)</div>
+            <div class="info-value" id="userPhone"><span class="loading">ရှာဖွေနေသည်...</span></div>
+        </div>
+
+        <a href="/" class="btn-home">ပင်မစာမျက်နှာသို့</a>
     </div>
 
     <script>
-        // URL မှ ID ကို ယူခြင်း
+        // URL မှ id ကို ဖတ်ယူခြင်း
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id');
 
-        // Render API မှ Data ခေါ်ယူခြင်း
-        fetch(`https://my-linn-app.onrender.com/api/user/${userId}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('userName').innerText = data.name;
-                document.getElementById('userPhone').innerText = data.phone;
-            });
+        if (!userId) {
+            document.getElementById('profileCard').innerHTML = "<h3>အသုံးပြုသူ ID မတွေ့ရှိပါ</h3><a href='/'>ပြန်သွားရန်</a>";
+        } else {
+            // Render API ဆီမှ Data လှမ်းယူခြင်း
+            fetch(`https://my-linn-app.onrender.com/api/user/${userId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error("Data ရှာမတွေ့ပါ");
+                    return res.json();
+                })
+                .then(data => {
+                    // အချက်အလက်များ ထည့်သွင်းခြင်း
+                    document.getElementById('userName').innerText = data.name;
+                    document.getElementById('userPhone').innerText = data.phone;
+                    
+                    // Avatar အတွက် အမည်၏ ရှေ့ဆုံးစာလုံးကို ယူခြင်း
+                    if(data.name) {
+                        document.getElementById('userInitial').innerText = data.name.charAt(0).toUpperCase();
+                    }
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    document.getElementById('profileCard').innerHTML = `<h3 style="color:red;">အချက်အလက် ရှာမတွေ့ပါ</h3><p>ကျေးဇူးပြု၍ ပြန်လည် Login ဝင်ပေးပါ</p><a href="login.html" class="btn-home">Login သို့</a>`;
+                });
+        }
     </script>
 </body>
 </html>
