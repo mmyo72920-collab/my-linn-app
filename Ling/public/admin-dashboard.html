@@ -145,7 +145,7 @@
     // 2. Fetch Submissions
     async function fetchForms() {
         try {
-            const res = await fetch('http://localhost:5000/admin/forms');
+            const res = await fetch('https://my-linn-app.onrender.com/admin/forms');
             const data = await res.json();
             
             const list = document.getElementById('formList');
@@ -178,7 +178,7 @@
         if (!confirm('ဤအချက်အလက်ကို ဖျက်ရန် သေချာပါသလား?')) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/admin/form/${id}`, {
+            const res = await fetch(`https://my-linn-app.onrender.com/admin/form/${id}`, {
                 method: 'DELETE'
             });
 

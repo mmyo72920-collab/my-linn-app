@@ -52,7 +52,7 @@
 
     async function loadDetails() {
         try {
-            const res = await fetch(`http://localhost:5000/admin/form/${id}`);
+            const res = await fetch(`https://my-linn-app.onrender.com/admin/form/${id}`);
             const data = await res.json();
             
             document.getElementById('content').innerHTML = `
@@ -62,8 +62,8 @@
                 <div class="info-item"><span class="label">Education</span><div class="value">${data.education}</div></div>
                 <div class="info-item" style="grid-column: span 2;"><span class="label">Address</span><div class="value">${data.address}</div></div>
             `;
-            document.getElementById('nrcImg').src = `http://localhost:5000/uploads/${data.nrcFile}`;
-            document.getElementById('hhImg').src = `http://localhost:5000/uploads/${data.householdFile}`;
+            document.getElementById('nrcImg').src = `https://my-linn-app.onrender.com/uploads/${data.nrcFile}`;
+            document.getElementById('hhImg').src = `https://my-linn-app.onrender.com/uploads/${data.householdFile}`;
         } catch { alert("Error loading data"); }
     }
     loadDetails();

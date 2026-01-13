@@ -264,7 +264,7 @@
         formData.append('householdFile', document.getElementById('householdFile').files[0]);
 
         try {
-            const response = await fetch('http://localhost:5000/submit-form', {
+            const response = await fetch('https://my-linn-app.onrender.com/submit-form', {
                 method: 'POST',
                 body: formData
             });
