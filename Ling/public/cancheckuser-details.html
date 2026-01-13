@@ -1,153 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile | Profile အချက်အလက်</title>
+    <title>User Profile | အချက်အလက်များစစ်ဆေးရန်</title>
     <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --bg-color: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-sub: #6b7280;
+            --primary: #4f46e5;
+            --success: #059669;
+            --info: #2563eb;
+            --danger: #dc2626;
+            --bg: #f3f4f6;
+            --card: #ffffff;
         }
 
         body {
             font-family: 'Inter', 'Pyidaungsu', sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg);
             margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
         }
 
         .profile-container {
-            background: var(--card-bg);
+            background: var(--card);
             padding: 2rem;
             border-radius: 1.5rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 400px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header-section { text-align: center; margin-bottom: 2rem; }
+        
+        .avatar {
+            width: 70px; height: 70px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2rem; font-weight: bold; margin: 0 auto 10px;
+        }
+
+        .data-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .data-row:last-child { border-bottom: none; }
+
+        .label { color: #6b7280; font-size: 0.85rem; font-weight: 600; }
+        .value { color: #1f2937; font-weight: 600; text-align: right; }
+
+        .image-preview-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .img-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 5px;
             text-align: center;
         }
 
-        .avatar {
-            width: 80px;
-            height: 80px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 50%;
+        .img-box img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-group { display: grid; gap: 10px; margin-top: 20px; }
+
+        .btn {
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 0 auto 1.5rem;
-        }
-
-        h2 {
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
-        }
-
-        .info-group {
-            text-align: left;
-            background: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.8rem;
-            margin-bottom: 1rem;
-            border: 1px solid #e5e7eb;
-        }
-
-        .info-label {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-        }
-
-        .info-value {
-            font-size: 1.1rem;
-            color: var(--text-main);
-            font-weight: 600;
-            margin-top: 0.2rem;
-        }
-
-        .btn-home {
-            display: inline-block;
-            margin-top: 1.5rem;
-            padding: 0.8rem 1.5rem;
-            background-color: var(--primary-color);
+            gap: 8px;
             color: white;
             text-decoration: none;
-            border-radius: 0.6rem;
-            font-weight: 600;
-            transition: background 0.3s;
+            transition: 0.3s;
         }
 
-        .btn-home:hover {
-            background-color: #4338ca;
-        }
+        .btn-edit { background: var(--info); }
+        .btn-download { background: var(--success); }
+        .btn-download:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-finish { background: var(--danger); }
 
-        /* Loading Animation */
-        .loading {
-            color: var(--text-sub);
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #999;
             font-style: italic;
         }
     </style>
 </head>
 <body>
 
-    <div class="profile-container" id="profileCard">
-        <div class="avatar" id="userInitial">U</div>
-        <h2>အသုံးပြုသူ အချက်အလက်</h2>
-        <p style="color: var(--text-sub); margin-bottom: 2rem;">သင့်အကောင့်အချက်အလက်များကို ဤနေရာတွင် စစ်ဆေးနိုင်ပါသည်</p>
-
-        <div class="info-group">
-            <div class="info-label">အမည် (Name)</div>
-            <div class="info-value" id="userName"><span class="loading">ရှာဖွေနေသည်...</span></div>
+    <div class="profile-container">
+        <div class="header-section">
+            <div class="avatar" id="userInitial">?</div>
+            <h2 id="topName">အချက်အလက်များ</h2>
+            <p style="color: #6b7280;">ဖြည့်စွက်ထားသော Form အချက်အလက်များ</p>
         </div>
 
-        <div class="info-group">
-            <div class="info-label">ဖုန်းနံပါတ် (Phone)</div>
-            <div class="info-value" id="userPhone"><span class="loading">ရှာဖွေနေသည်...</span></div>
+        <div id="contentArea">
+            <div class="no-data">အချက်အလက်များ ရှာဖွေနေပါသည်...</div>
         </div>
 
-        <a href="/" class="btn-home">ပင်မစာမျက်နှာသို့</a>
+        <div class="btn-group">
+            <button onclick="goToForm()" class="btn btn-edit">
+                <i class="fas fa-edit"></i> Form ပြင်ဆင်ရန်
+            </button>
+
+            <button onclick="downloadInfo()" id="downBtn" class="btn btn-download" disabled>
+                <i class="fas fa-download"></i> အချက်အလက်များ သိမ်းဆည်းမည်
+            </button>
+
+            <button onclick="finish()" class="btn btn-finish">
+                <i class="fas fa-power-off"></i> Finished (ထွက်ရန်)
+            </button>
+        </div>
     </div>
 
     <script>
-        // URL မှ id ကို ဖတ်ယူခြင်း
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id');
+        let savedData = null;
 
-        if (!userId) {
-            document.getElementById('profileCard').innerHTML = "<h3>အသုံးပြုသူ ID မတွေ့ရှိပါ</h3><a href='/'>ပြန်သွားရန်</a>";
-        } else {
-            // Render API ဆီမှ Data လှမ်းယူခြင်း
-            fetch(`https://my-linn-app.onrender.com/api/user/${userId}`)
-                .then(res => {
-                    if (!res.ok) throw new Error("Data ရှာမတွေ့ပါ");
-                    return res.json();
-                })
-                .then(data => {
-                    // အချက်အလက်များ ထည့်သွင်းခြင်း
-                    document.getElementById('userName').innerText = data.name;
-                    document.getElementById('userPhone').innerText = data.phone;
-                    
-                    // Avatar အတွက် အမည်၏ ရှေ့ဆုံးစာလုံးကို ယူခြင်း
-                    if(data.name) {
-                        document.getElementById('userInitial').innerText = data.name.charAt(0).toUpperCase();
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    document.getElementById('profileCard').innerHTML = `<h3 style="color:red;">အချက်အလက် ရှာမတွေ့ပါ</h3><p>ကျေးဇူးပြု၍ ပြန်လည် Login ဝင်ပေးပါ</p><a href="login.html" class="btn-home">Login သို့</a>`;
-                });
+        window.onload = async () => {
+            if (!userId) return;
+
+            try {
+                // Form data ရှိမရှိ စစ်ဆေးပြီး အချက်အလက်ယူခြင်း
+                const res = await fetch(`https://my-linn-app.onrender.com/api/check-form/${userId}`);
+                const result = await res.json();
+
+                if (result.exists) {
+                    savedData = result.data;
+                    document.getElementById('userInitial').innerText = savedData.fullName.charAt(0);
+                    document.getElementById('topName').innerText = savedData.fullName;
+                    document.getElementById('downBtn').disabled = false;
+
+                    renderData(savedData);
+                } else {
+                    document.getElementById('contentArea').innerHTML = `
+                        <div class="no-data">Form မဖြည့်ရသေးပါ။ အချက်အလက်မရှိပါ။</div>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        function renderData(data) {
+            document.getElementById('contentArea').innerHTML = `
+                <div class="data-card">
+                    <div class="data-row"><span class="label">အမည်</span><span class="value">${data.fullName}</span></div>
+                    <div class="data-row"><span class="label">အသက်</span><span class="value">${data.age} နှစ်</span></div>
+                    <div class="data-row"><span class="label">ပညာအရည်အချင်း</span><span class="value">${data.education}</span></div>
+                    <div class="data-row"><span class="label">နေရပ်လိပ်စာ</span><span class="value">${data.address}</span></div>
+                    <div class="data-row"><span class="label">မိဘအမည်</span><span class="value">${data.fatherName} / ${data.motherName}</span></div>
+                </div>
+                <div class="image-preview-group">
+                    <div class="img-box">
+                        <span class="label">မှတ်ပုံတင်</span>
+                        <img src="${data.nrcUrl}" alt="NRC" onclick="window.open(this.src)">
+                    </div>
+                    <div class="img-box">
+                        <span class="label">အိမ်ထောင်စု</span>
+                        <img src="${data.householdUrl}" alt="HouseHold" onclick="window.open(this.src)">
+                    </div>
+                </div>
+            `;
         }
+
+        function downloadInfo() {
+            if(!savedData) return;
+            const text = `
+===== LINN FORM DATA =====
+အမည်: ${savedData.fullName}
+အသက်: ${savedData.age}
+ပညာအရည်အချင်း: ${savedData.education}
+နေရပ်လိပ်စာ: ${savedData.address}
+မိဘအမည်: ${savedData.fatherName} / ${savedData.motherName}
+မှတ်ပုံတင်ဖိုင်: ${savedData.nrcUrl}
+အိမ်ထောင်စုဖိုင်: ${savedData.householdUrl}
+--------------------------
+သိမ်းဆည်းသည့်ရက်: ${new Date().toLocaleDateString()}
+            `;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Form_${savedData.fullName}.txt`;
+            link.click();
+        }
+
+        function goToForm() { window.location.href = `form.html?id=${userId}`; }
+        function finish() { if(confirm("ထွက်မှာ သေချာပါသလား?")) window.location.href = "https://www.google.com"; }
     </script>
 </body>
 </html>
