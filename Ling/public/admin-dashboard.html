@@ -28,7 +28,17 @@
             margin: 0 auto;
         }
 
-        /* Stats Cards */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -56,17 +66,6 @@
             font-size: 1.5rem;
             background: #dbeafe;
             color: var(--accent);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .controls {
@@ -194,15 +193,14 @@
 </div>
 
 <script>
-    let allForms = [];
-
-    // Security Check
-    // (မှတ်ချက် - Login မှ isAdmin: true ပြန်လာပါက ဤနေရာကို ဝင်ခွင့်ပြုမည်)
-    const isAdmin = sessionStorage.getItem('isAdmin'); 
-    if (isAdmin !== 'true') {
-        window.location.href = 'login.html'; 
+    // 1. Unified Security Check (Must match what you use in login.html)
+    if (localStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
     }
 
+    let allForms = [];
+
+    // 2. Fetch Data
     async function fetchForms() {
         try {
             const res = await fetch('https://my-linn-app.onrender.com/admin/forms');
@@ -215,6 +213,7 @@
         }
     }
 
+    // 3. Render Table
     function renderTable(data) {
         const list = document.getElementById('formList');
         list.innerHTML = data.map(form => `
@@ -230,22 +229,27 @@
         `).join('');
     }
 
+    // 4. Filter Function
     function filterTable() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const filtered = allForms.filter(f => f.fullName.toLowerCase().includes(query));
         renderTable(filtered);
     }
 
+    // 5. Delete Function
     async function deleteForm(id) {
         if (!confirm('ဤအချက်အလက်ကို ဖျက်ရန် သေချာပါသလား?')) return;
-        const res = await fetch(`https://my-linn-app.onrender.com/admin/form/${id}`, { method: 'DELETE' });
-        if (res.ok) { fetchForms(); }
+        try {
+            const res = await fetch(`https://my-linn-app.onrender.com/admin/form/${id}`, { method: 'DELETE' });
+            if (res.ok) { fetchForms(); }
+        } catch (err) { alert("ဖျက်၍မရပါ"); }
     }
 
+    // 6. CSV Export
     function exportToCSV() {
         let csvContent = "data:text/csv;charset=utf-8,Name,Age,Education,Address\n";
         allForms.forEach(f => {
-            csvContent += `${f.fullName},${f.age},${f.education},${f.address}\n`;
+            csvContent += `"${f.fullName}",${f.age},"${f.education}","${f.address || ''}"\n`;
         });
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -255,11 +259,13 @@
         link.click();
     }
 
+    // 7. Logout Function
     function logout() {
-        sessionStorage.clear();
+        localStorage.removeItem('isAdminLoggedIn');
         window.location.href = 'login.html';
     }
 
+    // Start Fetching
     fetchForms();
 </script>
 </body>

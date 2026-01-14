@@ -233,8 +233,11 @@
                     // Admin သို့မဟုတ် User ခွဲခြားပြီး လမ်းကြောင်းပြောင်းခြင်း
                     setTimeout(() => {
                         if (data.isAdmin) {
+                            // အရေးကြီးသည်- Admin ဖြစ်ကြောင်း Browser တွင် သိမ်းထားခြင်း
+                            localStorage.setItem('isAdminLoggedIn', 'true');
                             window.location.href = "admin-dashboard.html";
                         } else {
+                            // ပုံမှန် User ဖြစ်ပါက User ID ဖြင့် သွားခြင်း
                             window.location.href = `cancheckuser-details.html?id=${data.user.id}`;
                         }
                     }, 1000);
@@ -244,7 +247,6 @@
             } catch (err) {
                 showError("ချိတ်ဆက်မှု အမှားအယွင်းရှိနေပါသည်။");
             } finally {
-                // Loading State Off (အောင်မြင်ရင် redirect ဖြစ်မှာမို့လို့ error အခြေအနေအတွက်ပဲ လိုအပ်တာပါ)
                 loginBtn.disabled = false;
                 spinner.style.display = "none";
                 btnText.innerText = "Login ဝင်မည်";
