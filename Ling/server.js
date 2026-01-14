@@ -26,7 +26,6 @@ if (!fs.existsSync(uploadDir)) {
 ======================= */
 app.use(express.json());
 app.use(cors()); 
-// Uploads folder ကို public အဖြစ် သတ်မှတ်ပေးခြင်း (ပုံများကြည့်နိုင်ရန်)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -39,7 +38,7 @@ mongoose
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 /* =======================
-   Multer Config (File Uploads)
+   Multer Config
 ======================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -56,36 +55,32 @@ const upload = multer({
 });
 
 /* =======================
-   Auth Routes
+   Unified Login (User & Admin)
 ======================= */
-app.post('/register', async (req, res) => {
-  try {
-    const { name, phone, password } = req.body;
-    if (!name || !phone || !password) return res.status(400).json({ message: 'အချက်အလက်အားလုံး ဖြည့်စွက်ပါ' });
-    if (password.length < 8) return res.status(400).json({ message: 'စကားဝှက်သည် အနည်းဆုံး စာလုံး ၈ လုံး ရှိရပါမည်' });
-
-    const existingUser = await User.findOne({ phone });
-    if (existingUser) return res.status(400).json({ message: 'ဤဖုန်းနံပါတ်ဖြင့် အကောင့်ရှိပြီးသားပါ' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, phone, password: hashedPassword });
-    await user.save();
-    res.status(201).json({ message: 'Register successful' });
-  } catch (err) {
-    res.status(500).json({ message: 'Register error' });
-  }
-});
-
 app.post('/login', async (req, res) => {
   try {
     const { phone, password } = req.body;
+
+    // ၁။ Admin ဟုတ်မဟုတ် အရင်စစ်ဆေးခြင်း (.env ထဲမှ အချက်အလက်နှင့် တိုက်စစ်သည်)
+    if (phone === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+        return res.json({ 
+            message: 'Admin login successful', 
+            isAdmin: true 
+        });
+    }
+
+    // ၂။ ပုံမှန် User ဟုတ်မဟုတ် စစ်ဆေးခြင်း
     const user = await User.findOne({ phone });
     if (!user) return res.status(401).json({ message: 'ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'စကားဝှက် မှားယွင်းနေပါသည်' });
 
-    res.json({ message: 'Login successful', user: { id: user._id } });
+    res.json({ 
+        message: 'Login successful', 
+        isAdmin: false,
+        user: { id: user._id } 
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -95,7 +90,7 @@ app.post('/login', async (req, res) => {
    User & Form Management API
 ======================= */
 
-// ၁။ User Details ရယူရန်
+// User Details ရယူရန်
 app.get('/api/user/:id', async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
@@ -106,12 +101,11 @@ app.get('/api/user/:id', async (req, res) => {
     }
 });
 
-// ၂။ အသုံးပြုသူ Form ဖြည့်ပြီးသားရှိမရှိ စစ်ဆေးရန် (Image URL များပါ ပေါင်းထည့်ပေးထားသည်)
+// Form ဖြည့်ပြီးသားရှိမရှိ စစ်ဆေးရန်
 app.get('/api/check-form/:userId', async (req, res) => {
     try {
         const form = await Form.findOne({ userId: req.params.userId });
         if (form) {
-            // Frontend တွင် ပုံများတိုက်ရိုက်ပြရန် URL လမ်းကြောင်းများ ပြင်ဆင်ခြင်း
             const host = req.get('host');
             const protocol = req.protocol;
             const baseUrl = `${protocol}://${host}/uploads/`;
@@ -184,15 +178,8 @@ app.put('/api/update-form/:userId', upload.fields([
 /* =======================
    Admin APIs
 ======================= */
-app.post('/admin-login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-    res.json({ message: 'Admin login successful' });
-  } else {
-    res.status(401).json({ message: 'Invalid admin credentials' });
-  }
-});
 
+// Admin စာရင်းအားလုံးကို ရယူရန်
 app.get('/admin/forms', async (req, res) => {
   try {
     const forms = await Form.find().sort({ createdAt: -1 });
@@ -202,6 +189,7 @@ app.get('/admin/forms', async (req, res) => {
   }
 });
 
+// Admin က Data ဖျက်ရန်
 app.delete('/admin/form/:id', async (req, res) => {
   try {
     const form = await Form.findByIdAndDelete(req.params.id);
